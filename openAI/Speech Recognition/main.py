@@ -1,5 +1,5 @@
 
-import env
+import config
 import whisper
 from pytube import YouTube
 
@@ -14,3 +14,4 @@ f.close()
 
 f = open('output.txt', 'r')
 print(f.read())
+
