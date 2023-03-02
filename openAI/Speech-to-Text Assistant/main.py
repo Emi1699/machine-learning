@@ -2,7 +2,11 @@ import gradio as gr
 import openai
 import config
 
+import modes
+
 openai.api_key = config.OPENAI_API_KEY
+
+text = True
 
 '''
     We need to clarify some things. 
@@ -21,17 +25,16 @@ openai.api_key = config.OPENAI_API_KEY
 
 # this is where we will store the whole conversation between the chatbot and the user
 messages = [
-    {"role": "system", "content": "You are a therapist that can only reply in 3 words."},
+    {"role": "system", "content": modes.THREE_WORDS}
 ]
 
 
 # method that transcribes spoken language into text
-def transcribe(audio):
+def audio_text(audio):
     global messages
 
     audio_file = open(audio, 'rb')
     transcript = openai.Audio.transcribe('whisper-1', audio_file)
-    # print(transcript['text'])
 
     messages.append({"role": "user", "content": transcript['text']})
 
@@ -47,9 +50,32 @@ def transcribe(audio):
 
     print(response['usage']['total_tokens'])
 
-    return chat_transcript
+    return chat_transcript + "\n\n" + response['usage']['total_tokens']
 
 
-ui = gr.Interface(fn=transcribe, inputs=gr.Audio(source='microphone', type='filepath'), outputs='text')
+def text_text(user_text):
+    global messages
+
+    messages.append({"role": "user", "content": user_text})
+
+    response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=messages)
+
+    system_message = response['choices'][0]['message']['content']
+    messages.append({"role": "assistant", "content": system_message})
+
+    chat_transcript = ""
+    for message in messages:
+        if message['role'] != 'system':
+            chat_transcript += message['role'] + ": " + message['content'] + "\n\n"
+
+    print(response['usage']['total_tokens'])
+
+    return chat_transcript + "\n\n" + str(response['usage'])
+
+
+if text:
+    ui = gr.Interface(fn=text_text, inputs='text', outputs='text')
+else:
+    ui = gr.Interface(fn=audio_text, inputs=gr.Audio(source='microphone', type='filepath'), outputs='text')
 
 ui.launch()
