@@ -1,3 +1,4 @@
 config.py
 /__pycache__/
+/Speech-to-Text Assistant/__pycache__/
 /Speech-to-Text Assistant/flagged
