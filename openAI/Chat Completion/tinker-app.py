@@ -1,36 +1,100 @@
+
 import tkinter as tk
 import modes
 import openai_api
+import threading
 
 WINDOW_WIDTH = 750
 WINDOW_HEIGHT = 500
+PADDING = 7
 
 
+# used to check whether the thread generating the response is still running or not
+# this is fundamental if we want to have buttons to stop the current generation of text and start another
+# this also helps us in disabling the 'generate' button
+response_generation_complete = True
+
+def display_text(txt):
+    for index, char in enumerate(txt):
+        # create a delay of 200 milliseconds before displaying each character
+        root.after(17*index, append_text, char)
+
+def append_text(char):
+    output_box.insert(tk.END, char)
 
 def process_input():
-    input_text = input_box.get("1.0", "end-1c") # Get the text from the input box
-    input_box.delete('1.0', tk.END) # clear input box
+    global response_generation_complete
 
-    # generate chatbot response
-    output_text = openai_api.text_text(input_text)
+    if response_generation_complete:
+        response_generation_complete = False
+        process_button.config(state=tk.DISABLED)
 
-    # display response
-    output_box.delete("1.0", tk.END) # Clear the output box
-    output_box.insert(tk.END, output_text) # Insert the processed text into the output box
+        input_text = input_box.get("1.0", "end-1c")  # Get the text from the input box
+        input_box.delete('1.0', tk.END)  # clear input box
+
+        # display message while processing input
+        output_box.delete("1.0", tk.END)
+
+        def display_dots(count):
+            if not response_generation_complete:
+                if count == 0:
+                    output_box.delete("1.0", tk.END)
+                    output_box.insert(tk.END, ".")
+                elif count == 1:
+                    output_box.delete("1.0", tk.END)
+                    output_box.insert(tk.END, "..")
+                elif count == 2:
+                    output_box.delete("1.0", tk.END)
+                    output_box.insert(tk.END, "...")
+                elif count == 3:
+                    output_box.delete("1.0", tk.END)
+                    output_box.insert(tk.END, ".")
+                root.after(117, display_dots, (count % 3) + 1)
+
+        display_dots(1)
+
+        # start a new thread to generate chatbot response
+        threading.Thread(target=generate_response, args=(input_text,)).start()
+
+def generate_response(input_text):
+    global response_generation_complete
+    try:
+        # generate chatbot response
+        output_text = openai_api.text_text(input_text)
+        response_generation_complete = True
+
+        # display response
+        output_box.delete("1.0", tk.END)  # Clear the output box
+        display_text(output_text)
+
+        process_button.config(state=tk.NORMAL)
+
+    except Exception as e:
+        print(e)
 
 root = tk.Tk()
 root.title("J.A.R.V.I.S")
 
+# # Disable cursor changes and grab input focus
+# root.configure(cursor='')
+# root.grab_set()
+#
+# # Restore default cursor behavior and release input focus
+# root.configure(cursor=None)
+# root.grab_release()
+
 input_label = tk.Label(root, text="> query: ")
 input_label.pack()
 
-input_box = tk.Text(root, height=5, width=100)
+input_box = tk.Text(root, height=int(0.02 * WINDOW_HEIGHT), width=int(0.1 * WINDOW_WIDTH), wrap=tk.WORD)
+input_box.configure(padx=PADDING, pady=PADDING)
 input_box.pack()
 
 output_label = tk.Label(root, text="> answer: ")
 output_label.pack()
 
-output_box = tk.Text(root, height=30, width=100)
+output_box = tk.Text(root, height=int(0.037 * WINDOW_HEIGHT), width=int(0.1 * WINDOW_WIDTH), wrap=tk.WORD)
+output_box.configure(padx=PADDING, pady=PADDING)
 output_box.pack()
 
 process_button = tk.Button(root, text="Process", command=process_input)
