@@ -1,5 +1,6 @@
 import openai
 import config
+import modes
 
 openai.api_key = config.OPENAI_API_KEY
 
@@ -22,7 +23,7 @@ text = True
 
 # this is where we will store the whole conversation between the chatbot and the user
 messages = [
-    # {"role": "system", "content": modes.JARVIS}
+    {"role": "system", "content": modes.JARVIS}
 ]
 
 
