@@ -40,9 +40,10 @@ def process_input():
         input_box.delete('1.0', tk.END)  # clear input box
         input_box.insert('1.0', '$ ')
 
-        # display message while processing input
+        # clear output box
         output_box.delete("1.0", tk.END)
 
+        # start displaying loading message (3 dots in this case)
         def display_dots(count):
             if not response_generation_complete:
                 if count == 0:
@@ -74,6 +75,7 @@ def generate_response(input_text):
         response_generation_complete = True
 
         # display response
+        output_box.configure(state='normal')
         output_box.delete("1.0", tk.END)  # Clear the output box
         display_text(output_text)
 
@@ -94,19 +96,20 @@ input_label.pack()
 
 input_box = tk.Text(root, height=int(0.02 * WINDOW_HEIGHT), width=int(0.1 * WINDOW_WIDTH), wrap=tk.WORD)
 input_box.configure(padx=PADDING, pady=PADDING, bg=BOX_COLOUR, fg=TEXT_COLOUR,
-                    highlightbackground=UNSELECTED_BOX_OUTLINE_COLOUR, highlightcolor=SELECTED_BOX_OUTLINE_COLOUR)
+                    highlightbackground=UNSELECTED_BOX_OUTLINE_COLOUR, highlightcolor=SELECTED_BOX_OUTLINE_COLOUR,
+                    insertbackground=TEXT_COLOUR)
+input_box.insert('1.0', '$ ')
 input_box.pack()
 
 output_label = tk.Label(root, text="> answer: ")
 output_label.configure(bg=BOX_COLOUR, fg=TEXT_COLOUR)
 output_label.pack()
 
-
 output_box = tk.Text(root, height=int(0.03 * WINDOW_HEIGHT), width=int(0.1 * WINDOW_WIDTH), wrap=tk.WORD)
 output_box.configure(padx=PADDING, pady=PADDING, bg=BOX_COLOUR, fg=TEXT_COLOUR,
-                     highlightbackground=UNSELECTED_BOX_OUTLINE_COLOUR, highlightcolor=SELECTED_BOX_OUTLINE_COLOUR)
+                     highlightbackground=UNSELECTED_BOX_OUTLINE_COLOUR, highlightcolor=SELECTED_BOX_OUTLINE_COLOUR,
+                     insertbackground=TEXT_COLOUR)
 output_box.pack()
-
 
 process_button = tk.Button(root, text="> generate <", command=process_input)
 process_button.pack()
