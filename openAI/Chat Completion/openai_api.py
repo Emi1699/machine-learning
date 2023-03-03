@@ -1,6 +1,5 @@
 import openai
 import config
-import modes
 
 openai.api_key = config.OPENAI_API_KEY
 
