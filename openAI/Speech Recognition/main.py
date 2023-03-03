@@ -1,7 +1,4 @@
-
-import config
 import whisper
-from pytube import YouTube
 
 model = whisper.load_model('base')
 
