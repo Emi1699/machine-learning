@@ -1,6 +1,7 @@
 import gradio as gr
 import openai
 import config
+import subprocess
 
 import modes
 
@@ -25,7 +26,7 @@ text = True
 
 # this is where we will store the whole conversation between the chatbot and the user
 messages = [
-    {"role": "system", "content": modes.THREE_WORDS}
+    {"role": "system", "content": modes.JARVIS}
 ]
 
 
@@ -41,14 +42,15 @@ def audio_text(audio):
     response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=messages)
 
     system_message = response['choices'][0]['message']['content']
+
+    subprocess.call(['say', system_message])
+
     messages.append({"role": "assistant", "content": system_message})
 
     chat_transcript = ""
     for message in messages:
         if message['role'] != 'system':
             chat_transcript += message['role'] + ": " + message['content'] + "\n\n"
-
-    print(response['usage']['total_tokens'])
 
     return chat_transcript + "\n\n" + response['usage']['total_tokens']
 
@@ -61,6 +63,9 @@ def text_text(user_text):
     response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=messages)
 
     system_message = response['choices'][0]['message']['content']
+
+    subprocess.call(['say', system_message])
+
     messages.append({"role": "assistant", "content": system_message})
 
     chat_transcript = ""
